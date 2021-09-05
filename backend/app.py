@@ -10,7 +10,7 @@ def create_response(
     data: dict = None, status: int = 200, message: str = ""
 ) -> Tuple[Response, int]:
     """Wraps response in a consistent format throughout the API.
-    
+
     Format inspired by https://medium.com/@shazow/how-i-design-json-api-responses-71900f00f2db
     Modifications included:
     - make success a boolean since there's only 2 values
@@ -64,6 +64,26 @@ def delete_show(id):
 
 
 # TODO: Implement the rest of the API here!
+
+@app.route("/shows/<id>", methods=['GET'])
+def get_show(id):
+    if db.getById('shows', int(id)) is None:
+        return create_response(status=404, message="No show with this id exists")
+    return create_response({"shows": db.getById('shows', int(id))})
+
+@app.route("/shows", methods=['POST'])
+def post_show(body):
+    body = { data: {
+            "name" : name,
+            "episodes_seen" : episodes_seen
+            }
+            }
+    if body["name"] is None or body["episodes_seen"]:
+        return create_response(status=422, message="Either the name or number of episodes seen have not been provided")
+    db.create('shows', body)
+    return create_response(body, {"shows": db.getById('shows', len('shows'))}, status=422)
+
+
 
 """
 ~~~~~~~~~~~~ END API ~~~~~~~~~~~~
